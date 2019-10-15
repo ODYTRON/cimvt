@@ -17,6 +17,8 @@ from django.contrib import admin
 # import login logout views
 from django.contrib.auth import views as auth_views
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 # import the view directly (the user register)
 from users import views as user_views
 
@@ -28,9 +30,16 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('', include('blog.urls')),
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
 # this is not necessary because you have declared the home page of your app
 # the system navigates from the first page. The first pattern only is ok
 # when it match the first pattern then goes to the urls of the app and processes the remaining
 # strings. IF YOU ACTIVATE CODE THIS BELOW YOU WILL HAVE PROBLEM WITH NAVIGATION
  # path('about/', include('blog.urls')),
-]
+

@@ -1,5 +1,15 @@
 # import to render the templates
 from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+# we have class based views from now on
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView
+
+)
 # import to render the httpresponses
 # not so usefull for now
 # from django.http import HttpResponse
@@ -36,6 +46,57 @@ def home(request):
     # as a third argument pass context
     return render(request, 'blog/home.html', context)
 
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'blog/home.html' # <app>/<model>_<viewtype>.html (it expects a template with that name)
+    context_object_name = 'posts'
+    ordering = ['-date_posted']
+
+
+class PostDetailView(DetailView):
+    model = Post
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    fields = ['title', 'content']
+
+    # we create this method in order to automaticaly assign a new post to the logged in user
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    fields = ['title', 'content']
+
+    # we create this method in order to automaticaly assign a new post to the logged in user
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    # test if the post belongs to the author
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user == post.author:
+            return True
+        return False
+
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    success_url = '/'
+
+    # test if the post belongs to the author
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user == post.author:
+            return True
+        return False
+
+
+
 # just to show that there is a title in the view to be rendered on the window tab from the html contitional
 def about(request):
-    return render(request,'blog/about.html', {'title':'About'})
+    return render(request, 'blog/about.html', {'title': 'About'})

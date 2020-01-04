@@ -2,4 +2,5 @@
 
 The base code of cimvt tool. 
 
-backup of this dummy code
+backup of my first attempt with Django framework.
+
